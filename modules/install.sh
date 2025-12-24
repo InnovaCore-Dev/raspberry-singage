@@ -78,6 +78,20 @@ step_verify_internet() {
 step_device_info() {
     print_section "PASO 3/14 - INFORMACIÓN DEL DISPOSITIVO"
 
+    # Verificar si ya existe configuración
+    if [[ -f /etc/signage/device.conf ]]; then
+        source /etc/signage/device.conf
+        print_info "Configuración existente encontrada:"
+        print_success "  Empresa: ${DEVICE_COMPANY}"
+        print_success "  Pantalla: ${DEVICE_ID}"
+        echo
+
+        if ask_yes_no "¿Deseas mantener esta configuración?" "y"; then
+            print_success "Usando configuración existente"
+            return 0
+        fi
+    fi
+
     echo "Esta información ayuda a identificar el dispositivo en las alertas."
     echo
 
@@ -146,8 +160,33 @@ step_update_packages() {
 step_install_packages() {
     print_section "PASO 5/14 - INSTALACIÓN DE PAQUETES"
 
+    # Detectar nombre correcto de Chromium
+    local chromium_package="chromium-browser"
+
+    print_step "Detectando nombre del paquete Chromium..."
+
+    if apt-cache show chromium-browser &>/dev/null; then
+        chromium_package="chromium-browser"
+        print_info "Usando: chromium-browser"
+    elif apt-cache show chromium &>/dev/null; then
+        chromium_package="chromium"
+        print_info "Usando: chromium"
+    else
+        print_error "No se encontró paquete Chromium en los repositorios"
+        print_info "Actualizando lista de paquetes..."
+        apt-get update -qq
+
+        if apt-cache show chromium &>/dev/null; then
+            chromium_package="chromium"
+            print_info "Usando: chromium"
+        else
+            print_error "Chromium no disponible. Verifica los repositorios."
+            return 1
+        fi
+    fi
+
     local packages=(
-        "chromium-browser"
+        "$chromium_package"
         "unclutter"
         "xdotool"
         "curl"
@@ -182,6 +221,20 @@ step_install_packages() {
 
 step_configure_url() {
     print_section "PASO 6/14 - CONFIGURACIÓN DE URL"
+
+    # Verificar si ya existe configuración
+    if [[ -f /etc/signage/kiosk.conf ]]; then
+        source /etc/signage/kiosk.conf
+        print_info "Configuración existente encontrada:"
+        print_success "  URL: ${KIOSK_URL}"
+        print_success "  Usuario: ${KIOSK_USER}"
+        echo
+
+        if ask_yes_no "¿Deseas mantener esta configuración?" "y"; then
+            print_success "Usando configuración existente"
+            return 0
+        fi
+    fi
 
     echo "Ingresa la URL que deseas mostrar en la pantalla."
     echo "Debe ser una URL completa (http:// o https://)"

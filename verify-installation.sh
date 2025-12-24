@@ -163,6 +163,8 @@ echo
 
 if command -v chromium-browser &>/dev/null; then
     print_check "ok" "Chromium instalado: $(chromium-browser --version 2>/dev/null | head -1)"
+elif command -v chromium &>/dev/null; then
+    print_check "ok" "Chromium instalado: $(chromium --version 2>/dev/null | head -1)"
 else
     print_check "error" "Chromium NO INSTALADO"
 fi
@@ -194,7 +196,17 @@ echo
 echo "7. Paquetes Necesarios:"
 echo
 
-packages=("chromium-browser" "unclutter" "xdotool" "curl" "jq" "bc")
+# Verificar chromium (ambos nombres posibles)
+if dpkg -l 2>/dev/null | grep -q "^ii  chromium-browser "; then
+    print_check "ok" "chromium-browser instalado"
+elif dpkg -l 2>/dev/null | grep -q "^ii  chromium "; then
+    print_check "ok" "chromium instalado"
+else
+    print_check "error" "chromium NO INSTALADO"
+fi
+
+# Verificar otros paquetes
+packages=("unclutter" "xdotool" "curl" "jq" "bc")
 
 for package in "${packages[@]}"; do
     if dpkg -l 2>/dev/null | grep -q "^ii  $package "; then
