@@ -19,6 +19,7 @@ INTERNET_DOWN_SINCE=0
 LAST_URL_CHECK=0
 LAST_QUEUE_PROCESS=0
 TEMP_ALERT_SENT=false
+SCHEDULED_REBOOT_DONE=false
 
 # ───────────────────────────────────────────────────────────────────────────
 # Funciones de Utilidad
@@ -295,6 +296,38 @@ periodic_queue_process() {
 }
 
 # ───────────────────────────────────────────────────────────────────────────
+# Reinicio Programado Semanal
+# ───────────────────────────────────────────────────────────────────────────
+
+check_scheduled_reboot() {
+    local current_day=$(date +%u)  # 1=Lunes, 7=Domingo
+    local current_hour=$(date +%H)
+    local current_minute=$(date +%M)
+
+    # Reiniciar los sábados (6) a las 4:00 AM
+    if [[ "$current_day" == "6" ]] && [[ "$current_hour" == "04" ]] && [[ "$current_minute" == "00" ]]; then
+        if [[ "$SCHEDULED_REBOOT_DONE" == "false" ]]; then
+            log_message "Reinicio programado semanal activado (Sábado 4:00 AM)"
+            send_alert "REBOOT" "Reinicio programado semanal.
+
+*Día:* Sábado
+*Hora:* 04:00 AM
+
+_Este reinicio mantiene el sistema optimizado._"
+
+            SCHEDULED_REBOOT_DONE=true
+            sleep 5
+            reboot
+        fi
+    else
+        # Resetear flag fuera del horario de reinicio
+        if [[ "$current_day" != "6" ]] || [[ "$current_hour" != "04" ]]; then
+            SCHEDULED_REBOOT_DONE=false
+        fi
+    fi
+}
+
+# ───────────────────────────────────────────────────────────────────────────
 # Loop Principal
 # ───────────────────────────────────────────────────────────────────────────
 
@@ -330,6 +363,9 @@ main_loop() {
 
         # 5. Procesar cola de mensajes pendientes
         periodic_queue_process
+
+        # 6. Verificar reinicio programado
+        check_scheduled_reboot
     done
 }
 

@@ -192,6 +192,8 @@ step_install_packages() {
         "curl"
         "jq"
         "bc"
+        "ffmpeg"
+        "libavcodec-extra"
     )
 
     print_info "Instalando ${#packages[@]} paquetes..."
@@ -363,6 +365,7 @@ chromium-browser \
     --noerrdialogs \
     --disable-infobars \
     --no-first-run \
+    --password-store=basic \
     --check-for-update-interval=31536000 \
     --disable-session-crashed-bubble \
     --disable-features=TranslateUI \
