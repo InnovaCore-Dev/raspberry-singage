@@ -1,0 +1,59 @@
+signage-system/
+├── signage-setup.sh              # ⭐ SCRIPT PRINCIPAL (ejecutar con sudo)
+├── watchdog.sh                   # Sistema de monitoreo 24/7
+├── verify-installation.sh        # Verificar instalación correcta
+│
+├── modules/                      # Módulos funcionales
+│   ├── common.sh                 # Funciones compartidas
+│   ├── install.sh                # Instalación completa del sistema
+│   ├── update-content.sh         # Actualización de URL y contenido
+│   ├── info.sh                   # Información del sistema
+│   ├── maintenance.sh            # Herramientas de mantenimiento
+│   └── telegram-alerts.sh        # Configuración de alertas
+│
+├── lib/                          # Librerías de utilidades
+│   ├── cache-clean.sh            # Limpieza de caché de Chromium
+│   ├── chromium-restart.sh       # Reinicio del navegador
+│   ├── validators.sh             # Validación de entradas
+│   ├── network-check.sh          # Verificación de red
+│   └── telegram-notify.sh        # Envío de notificaciones
+│
+├── README.md                     # 📖 Documentación completa
+├── INSTALL.md                    # 🚀 Guía de instalación rápida
+└── ESTRUCTURA.txt                # 📁 Este archivo
+
+═══════════════════════════════════════════════════════════════════
+
+📋 ARCHIVOS DE CONFIGURACIÓN (creados después de instalar)
+
+/etc/signage/
+├── kiosk.conf                    # URL y usuario del kiosco
+├── device.conf                   # Información del dispositivo
+├── telegram.conf                 # Credenciales de Telegram (600 perms)
+└── telegram-events.conf          # Eventos a alertar
+
+/usr/local/bin/
+├── start-kiosk.sh                # Script que inicia Chromium
+└── signage-watchdog.sh           # Watchdog copiado del sistema
+
+/etc/systemd/system/
+└── signage-watchdog.service      # Servicio systemd del watchdog
+
+/var/log/
+├── signage/watchdog.log          # Logs del watchdog
+└── signage-telegram-queue.log    # Cola de mensajes de Telegram
+
+~/.config/autostart/
+└── kiosk.desktop                 # Autostart de Chromium
+
+═══════════════════════════════════════════════════════════════════
+
+🚀 INICIO RÁPIDO
+
+1. chmod +x signage-setup.sh modules/*.sh lib/*.sh watchdog.sh verify-installation.sh
+2. sudo ./signage-setup.sh
+3. Seleccionar [1] Instalación Inicial
+4. Seguir el asistente
+5. Reiniciar
+
+═══════════════════════════════════════════════════════════════════
