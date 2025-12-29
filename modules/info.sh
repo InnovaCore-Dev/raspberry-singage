@@ -248,14 +248,36 @@ export_system_info() {
 
         # Servicios
         echo "═══ SERVICIOS ═══"
-        systemctl status signage-watchdog --no-pager 2>&1
+
+        # Verificar si existe signage-watchdog
+        if systemctl list-unit-files signage-watchdog.service &>/dev/null && \
+           systemctl cat signage-watchdog.service &>/dev/null; then
+            systemctl status signage-watchdog --no-pager 2>&1
+        else
+            echo "signage-watchdog.service - No instalado"
+            echo "   Loaded: not-found (El servicio no está configurado)"
+            echo "   Nota: El watchdog puede ejecutarse manualmente con watchdog.sh"
+        fi
         echo
+
         systemctl status lightdm --no-pager 2>&1
         echo
 
         # Logs recientes
         echo "═══ LOGS RECIENTES ═══"
-        journalctl -u signage-watchdog -n 50 --no-pager 2>&1
+
+        if systemctl list-unit-files signage-watchdog.service &>/dev/null && \
+           systemctl cat signage-watchdog.service &>/dev/null; then
+            journalctl -u signage-watchdog -n 50 --no-pager 2>&1
+        else
+            echo "No hay logs del watchdog (servicio no configurado)"
+            echo
+            # Mostrar logs del archivo si existe
+            if [[ -f /var/log/signage/watchdog.log ]]; then
+                echo "Logs del archivo /var/log/signage/watchdog.log:"
+                tail -n 20 /var/log/signage/watchdog.log 2>&1
+            fi
+        fi
         echo
 
     } > "$output_file"

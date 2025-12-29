@@ -85,28 +85,78 @@ check_raspberry_pi() {
 
 install_package() {
     local package="$1"
+    local max_retries=2
+    local retry_count=0
 
     print_step "Verificando ${package}..."
 
+    # Log para debugging
+    if type -t log_info &>/dev/null; then
+        log_info "Verificando paquete: ${package}"
+    fi
+
     if dpkg -l 2>/dev/null | grep -q "^ii  $package "; then
         print_success "${package} ya está instalado"
+        if type -t log_success &>/dev/null; then
+            log_success "Paquete ${package} ya está instalado"
+        fi
         return 0
     fi
 
-    print_step "Instalando ${package}..."
+    # Manejar bloqueos de APT
+    while fuser /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock /var/lib/dpkg/lock >/dev/null 2>&1; do
+        print_warning "Esperando a que se liberen los bloqueos de APT (otro proceso está actualizando)..."
+        sleep 5
+    done
 
-    if DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
-        -o Dpkg::Options::="--force-confdef" \
-        -o Dpkg::Options::="--force-confold" \
-        "$package" >/dev/null 2>&1; then
-
-        if dpkg -l 2>/dev/null | grep -q "^ii  $package "; then
-            print_success "${package} instalado correctamente"
-            return 0
+    while [ $retry_count -le $max_retries ]; do
+        print_step "Instalando ${package}..."
+        if type -t log_info &>/dev/null; then
+            log_info "Instalando paquete: ${package} (Intento $((retry_count + 1)))"
         fi
+
+        # Guardar salida en archivo temporal para logging
+        local apt_output=$(mktemp)
+
+        if DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
+            -o Dpkg::Options::="--force-confdef" \
+            -o Dpkg::Options::="--force-confold" \
+            "$package" >"$apt_output" 2>&1; then
+
+            if dpkg -l 2>/dev/null | grep -q "^ii  $package "; then
+                print_success "${package} instalado correctamente"
+                if type -t log_success &>/dev/null; then
+                    log_success "Paquete ${package} instalado correctamente"
+                fi
+                rm -f "$apt_output"
+                return 0
+            fi
+        fi
+
+        # Si falla, intentar reparar el sistema antes de reintentar
+        print_warning "Fallo en la instalación de ${package}. Intentando reparar dependencias..."
+        if type -t log_warning &>/dev/null; then
+            log_warning "Fallo instalación de ${package}. Ejecutando reparación automática..."
+        fi
+        
+        dpkg --configure -a >/dev/null 2>&1
+        apt-get install -f -y -qq >/dev/null 2>&1
+        
+        ((retry_count++))
+        rm -f "$apt_output"
+        
+        if [ $retry_count -le $max_retries ]; then
+            print_info "Reintentando instalación de ${package}..."
+            sleep 2
+        fi
+    done
+
+    # Si después de los reintentos sigue fallando
+    print_error "Error persistente al instalar ${package}"
+    if type -t log_error &>/dev/null; then
+        log_error "Error persistente al instalar ${package} después de $max_retries reintentos"
     fi
 
-    print_error "Error al instalar ${package}"
     return 1
 }
 

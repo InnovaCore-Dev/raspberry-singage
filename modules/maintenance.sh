@@ -270,6 +270,24 @@ maintenance_export_diagnostics() {
 }
 
 # ───────────────────────────────────────────────────────────────────────────
+# Verificación y Reparación Automática
+# ───────────────────────────────────────────────────────────────────────────
+
+maintenance_verify_and_fix() {
+    clear
+
+    # Ejecutar script de verificación
+    if [[ -x "${SCRIPT_DIR}/verify-and-fix.sh" ]]; then
+        "${SCRIPT_DIR}/verify-and-fix.sh"
+    else
+        print_error "Script de verificación no encontrado"
+        print_info "Ruta esperada: ${SCRIPT_DIR}/verify-and-fix.sh"
+    fi
+
+    return 0
+}
+
+# ───────────────────────────────────────────────────────────────────────────
 # Menú de Mantenimiento
 # ───────────────────────────────────────────────────────────────────────────
 
@@ -287,6 +305,7 @@ maintenance_menu() {
         echo "  [7] 📦 Actualizar sistema operativo"
         echo "  [8] 🌐 Configurar red"
         echo "  [9] 📊 Exportar información de diagnóstico"
+        echo "  [A] 🔧 Verificar y reparar sistema automáticamente"
         echo "  [0] ↩️  Volver"
         echo
         print_separator
@@ -329,6 +348,10 @@ maintenance_menu() {
                 ;;
             9)
                 maintenance_export_diagnostics
+                press_any_key
+                ;;
+            [aA])
+                maintenance_verify_and_fix
                 press_any_key
                 ;;
             0)

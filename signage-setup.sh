@@ -156,7 +156,20 @@ main_menu_loop() {
 
         case "$option" in
             1)
-                option_install
+                # Ejecutar instalación
+                if run_installation; then
+                    echo
+                    print_success "Instalación completada"
+                else
+                    echo
+                    print_warning "La instalación terminó con algunos avisos o errores menores."
+                    print_info "Ejecutando verificación y reparación final de seguridad..."
+                    # Ejecutar el script de verificación y reparación automáticamente
+                    if [[ -f "${SCRIPT_DIR}/verify-and-fix.sh" ]]; then
+                        sudo bash "${SCRIPT_DIR}/verify-and-fix.sh"
+                    fi
+                fi
+                press_any_key
                 ;;
             2)
                 option_update_content
