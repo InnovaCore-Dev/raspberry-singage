@@ -557,6 +557,23 @@ Este proyecto es de código abierto. Úsalo libremente para tus proyectos.
 
 ---
 
+## 🖥️🖥️ Video Wall (Dual HDMI)
+
+Para setups con **dos monitores HDMI** mostrando contenido distinto en cada uno (ej: SuperGloria horizontal con `/pantalla-1` y `/pantalla-2`), seguí la guía dedicada:
+
+📖 **[docs/videowall-raspberry-pi.md](docs/videowall-raspberry-pi.md)**
+
+Esa guía cubre:
+- Por qué Sway en lugar de labwc para multi-monitor
+- Configuración completa de Sway + Chromium kiosk en cada output
+- VNC con switch entre HDMI-A-1 y HDMI-A-2
+- Script para alternar entre Sway y labwc sin reinstalar
+- Troubleshooting (Xwayland, app_id mismatch, tabs duplicadas)
+
+Probado en Raspberry Pi 5 con Pi OS Trixie.
+
+---
+
 ## 🎉 ¡Listo!
 
 Tu Raspberry Pi ahora funciona como una pantalla digital profesional 24/7.
